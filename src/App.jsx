@@ -3,6 +3,8 @@ import useDepthMotion from "./useDepthMotion";
 import usePageMotion from "./usePageMotion";
 import ProjectShowcase from "./ProjectShowcase";
 import PrincipleSwiper from "./PrincipleSwiper";
+import useTracker from "./useTracker";
+import Admin from "./Admin";
 const HeroOrbit = lazy(() => import("./HeroOrbit"));
 import {
   Menu,
@@ -54,6 +56,18 @@ const iconMap = {
   tools: Wrench,
 };
 function Brand({ name, size = 18 }) {
+  if (name === "linkedin")
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.77v8.37H6.46v-8.37M7.84 6.7a1.61 1.61 0 1 0 0 3.22 1.61 1.61 0 0 0 0-3.22Z" />
+      </svg>
+    );
   if (name === "instagram")
     return (
       <svg
@@ -115,16 +129,20 @@ function Heading({ title, subtitle, dark = false, eyebrow }) {
 function SocialLinks() {
   return (
     <>
-      <External href="https://github.com/kazakov7" aria-label="GitHub">
+      <External href="https://github.com/kazakov7" aria-label="GitHub" data-track="github">
         <Brand name="github" />
+      </External>
+      <External href="https://linkedin.com" aria-label="LinkedIn" data-track="linkedin">
+        <Brand name="linkedin" />
       </External>
       <External
         href="https://www.instagram.com/kevin.dev__"
         aria-label="Instagram"
+        data-track="instagram"
       >
         <Brand name="instagram" />
       </External>
-      <External href="https://t.me/Kevin_Keen" aria-label="Telegram">
+      <External href="https://t.me/Kevin_Keen" aria-label="Telegram" data-track="telegram">
         <Brand name="telegram" />
       </External>
     </>
@@ -166,13 +184,13 @@ function ProjectDialog({ project: p, t, lang, onClose }) {
           <p className="dialog-subtitle">{p.subtitle[lang]}</p>
           <div className="dialog-links">
             {p.url && (
-              <External href={p.url} className="button button-blue">
+              <External href={p.url} className="button button-blue" data-track={`project_live_${p.name}`}>
                 {t.live}
                 <ArrowUpRight size={15} />
               </External>
             )}
             {p.repo && (
-              <External href={p.repo} className="button button-outline">
+              <External href={p.repo} className="button button-outline" data-track={`project_repo_${p.name}`}>
                 {t.source}
                 <Brand name="github" size={15} />
               </External>
@@ -210,6 +228,29 @@ function ProjectDialog({ project: p, t, lang, onClose }) {
   );
 }
 export default function App() {
+  useTracker();
+
+  const [currentRoute, setCurrentRoute] = useState(
+    () => (typeof window !== "undefined" ? window.location.pathname : "/")
+  );
+
+  useEffect(() => {
+    const handleLocationChange = () => setCurrentRoute(window.location.pathname);
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
+  }, []);
+
+  if (currentRoute === "/admin") {
+    return (
+      <Admin
+        onNavigateHome={() => {
+          window.history.pushState({}, "", "/");
+          setCurrentRoute("/");
+        }}
+      />
+    );
+  }
+
   const [lang, setLang] = useState(() => {
       try {
         return localStorage.getItem("kevin-language") === "ko" ? "ko" : "en";
@@ -450,7 +491,7 @@ export default function App() {
             <p>{t.hero1}</p>
             <p>{t.hero2}</p>
             <div className="hero-buttons">
-              <a className="hire-link" href="#contact">
+              <a className="hire-link" href="#contact" data-track="contact_hire">
                 <span>
                   <ChevronRight size={20} />
                 </span>
@@ -460,6 +501,7 @@ export default function App() {
                 className="button button-white"
                 href="/Kevin-Resume.pdf"
                 download
+                data-track="cv_download"
               >
                 {t.cv}
               </a>
@@ -838,6 +880,7 @@ export default function App() {
                       key={p.id}
                       onClick={() => setSelected(p)}
                       aria-label={`${t.projectDetails}: ${p.name}`}
+                      data-track={`project_${p.name}`}
                     >
                       <img
                         src={`/assets/${p.image}.webp`}
@@ -862,7 +905,7 @@ export default function App() {
             </div>
             <p className="more-line">
               {t.workMore}{" "}
-              <External href="https://github.com/kazakov7">
+              <External href="https://github.com/kazakov7" data-track="github">
                 {t.githubMore}
               </External>
             </p>
@@ -879,6 +922,7 @@ export default function App() {
                 className="button button-white"
                 href="/Kevin-Resume.pdf"
                 download
+                data-track="cv_download"
               >
                 {t.cv}
               </a>
@@ -1042,7 +1086,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <button className="button button-white" type="submit">
+                <button className="button button-white" type="submit" data-track="contact_submit">
                   {t.submit}
                   <ChevronRight size={14} />
                 </button>
@@ -1058,7 +1102,7 @@ export default function App() {
                     <span>{t.contactLocation}</span>
                   </div>
                 </div>
-                <a className="contact-box" href="tel:+821080977787">
+                <a className="contact-box" href="tel:+821080977787" data-track="contact_phone">
                   <Phone size={35} strokeWidth={1.2} />
                   <div>
                     <strong>{t.phone}:</strong>
@@ -1069,12 +1113,13 @@ export default function App() {
                   <Mail size={36} strokeWidth={1.2} />
                   <div>
                     <strong>{t.email}:</strong>
-                    <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+                    <a href={`mailto:${EMAIL}`} data-track="contact_email">{EMAIL}</a>
                   </div>
                   <button
                     onClick={copyEmail}
                     aria-label={t.copy}
                     className="copy-email"
+                    data-track="contact_copy_email"
                   >
                     <Copy size={15} />
                   </button>
@@ -1092,8 +1137,11 @@ export default function App() {
         <div className="container">
           <span>
             © {new Date().getFullYear()} Kevin. {t.footer}
+            <small className="privacy-note">
+              Anonymous statistics are collected to improve this site.
+            </small>
           </span>
-          <a href="#home">
+          <a href="#home" data-track="back_to_top">
             {t.back}
             <ArrowUp size={12} />
           </a>
