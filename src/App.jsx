@@ -37,6 +37,11 @@ import {
 } from "lucide-react";
 import { projects, experience } from "./content";
 import { words, serviceData, skillGroups, notes } from "./design-content";
+const languages = [
+  { code: "en", name: "English" },
+  { code: "ko", name: "한국어" },
+  { code: "uz", name: "O‘zbekcha" },
+];
 const EMAIL = "kazakov28082003@gmail.com";
 const ids = [
   "home",
@@ -253,7 +258,8 @@ export default function App() {
 
   const [lang, setLang] = useState(() => {
       try {
-        return localStorage.getItem("kevin-language") === "ko" ? "ko" : "en";
+        const saved = localStorage.getItem("kevin-language");
+        return languages.some((l) => l.code === saved) ? saved : "en";
       } catch {
         return "en";
       }
@@ -303,10 +309,21 @@ export default function App() {
   }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
+    document.title = t.metaTitle;
+    for (const [selector, value] of [
+      ['meta[name="description"]', t.metaDescription],
+      ['meta[property="og:title"]', t.metaTitle],
+      ['meta[property="og:description"]', t.metaOgDescription],
+      ['meta[name="twitter:title"]', t.metaTitle],
+      ['meta[name="twitter:description"]', t.metaOgDescription],
+    ]) {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute("content", value);
+    }
     try {
       localStorage.setItem("kevin-language", lang);
     } catch {}
-  }, [lang]);
+  }, [lang, t]);
   useEffect(() => {
     function esc(e) {
       if (e.key === "Escape") setMenu(false);
@@ -358,7 +375,7 @@ export default function App() {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const body = `${data.get("message")}\n\n${data.get("name")}\n${data.get("email")}`;
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Portfolio inquiry from " + data.get("name"))}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent((t.inquirySubject || "Portfolio inquiry from ") + " " + data.get("name"))}&body=${encodeURIComponent(body)}`;
     setDraft(true);
   }
   const jobs = [
@@ -366,9 +383,9 @@ export default function App() {
     {
       company: t.personal,
       date: "2026",
-      role: { en: t.personalRole, ko: t.personalRole },
-      text: { en: t.personalText, ko: t.personalText },
-      country: { en: "Seoul", ko: "서울" },
+      role: { en: t.personalRole, ko: t.personalRole, uz: t.personalRole },
+      text: { en: t.personalText, ko: t.personalText, uz: t.personalText },
+      country: { en: "Seoul", ko: "서울", uz: t.seoulCity || "Seul" },
     },
   ];
   const gallery = ["aurora", "elif", "floralens", "emilia", "topik"].map((id) =>
@@ -381,26 +398,17 @@ export default function App() {
       title: t.school,
       sub: t.schoolDetail,
       badge: "2023–2025",
-      detail:
-        lang === "en"
-          ? "Completed a two-year diploma at Seojeong University (서정대학교)."
-          : "서정대학교에서 2년제 전문학사 과정을 마쳤습니다.",
+      detail: t.schoolDescription,
     },
     {
       title: t.korean,
       sub: t.koreanDetail,
       badge: "TOPIK 5",
-      detail:
-        lang === "en"
-          ? "Korean language proficiency: TOPIK Level 5."
-          : "한국어능력시험 TOPIK 5급입니다.",
+      detail: t.koreanDescription,
     },
     {
       title: t.languages,
-      sub:
-        lang === "en"
-          ? "Uzbek · Korean · English"
-          : "우즈베크어 · 한국어 · 영어",
+      sub: t.languageNames,
       badge: "03",
       detail: t.languagesDetail,
     },
@@ -414,7 +422,7 @@ export default function App() {
         <span />
       </div>
       <a className="skip-link" href="#main">
-        {lang === "en" ? "Skip to content" : "본문으로 이동"}
+        {t.skip}
       </a>
       <section id="home" className="hero">
         <div className="hero-orb orb-one" />
@@ -448,29 +456,32 @@ export default function App() {
             <button
               className="motion-toggle"
               aria-pressed={motion}
-              aria-label={
-                lang === "en"
-                  ? motion
-                    ? "Pause animations"
-                    : "Enable animations"
-                  : motion
-                    ? "애니메이션 멈추기"
-                    : "애니메이션 켜기"
-              }
+              aria-label={motion ? t.pauseMotion : t.enableMotion}
               onClick={() => setMotion(!motion)}
             >
               {motion ? <Pause size={12} /> : <Play size={12} />}FX
             </button>
-            <button
-              className="language-toggle"
-              onClick={() => setLang(lang === "en" ? "ko" : "en")}
-              aria-label={
-                lang === "en" ? "Switch to Korean" : "Switch to English"
-              }
-            >
-              <Globe size={14} />
-              {lang.toUpperCase()}
-            </button>
+            <label className="language-toggle">
+              <Globe size={14} aria-hidden="true" />
+              <select
+                className="language-select"
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                aria-label={t.language}
+                title={languages.find((l) => l.code === lang)?.name}
+              >
+                {languages.map((l) => (
+                  <option
+                    key={l.code}
+                    value={l.code}
+                    lang={l.code}
+                    aria-label={l.name}
+                  >
+                    {l.code.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               className="mobile-menu"
               onClick={() => setMenu(!menu)}
@@ -519,7 +530,7 @@ export default function App() {
             <span className="orbit-mote mote-b" />
             <span className="hero-3d-label">
               <Box size={11} />
-              {lang === "en" ? "INTERACTIVE 3D" : "인터랙티브 3D"}
+              {t.interactive3d}
             </span>
             <div className="portrait-orbit" />
             <div className="portrait-satellite" />
@@ -534,12 +545,12 @@ export default function App() {
           className="menu-backdrop"
           role="dialog"
           aria-modal="true"
-          aria-label={lang === "en" ? "Navigation" : "탐색 메뉴"}
+          aria-label={t.navigation}
           onClick={() => setMenu(false)}
         >
           <nav
             className="nav-drawer"
-            aria-label={lang === "en" ? "Main navigation" : "메인 메뉴"}
+            aria-label={t.mainNavigation}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="drawer-top">
@@ -604,7 +615,7 @@ export default function App() {
                     <div>
                       <dt>{t.visa}:</dt>
                       <dd>
-                        D-10 · {lang === "en" ? "Job-Seeker" : "구직 비자"}
+                        D-10 · {t.jobSeeker}
                       </dd>
                     </div>
                     <div>
@@ -838,28 +849,25 @@ export default function App() {
               <div
                 className="project-view-tabs"
                 role="group"
-                aria-label={
-                  lang === "en" ? "Project view" : "프로젝트 보기 방식"
-                }
+                aria-label={t.projectView}
               >
                 <button
                   className={projectView === "showcase" ? "active" : ""}
                   aria-pressed={projectView === "showcase"}
                   onClick={() => setProjectView("showcase")}
                 >
-                  {lang === "en" ? "3D Showcase" : "3D 쇼케이스"}
+                  {t.showcase}
                 </button>
                 <button
                   className={projectView === "grid" ? "active" : ""}
                   aria-pressed={projectView === "grid"}
                   onClick={() => setProjectView("grid")}
                 >
-                  {lang === "en" ? "All Projects" : "전체 프로젝트"}
+                  {t.allProjects}
                 </button>
               </div>
               <span>
-                {String(gallery.length).padStart(2, "0")}{" "}
-                {lang === "en" ? "SELECTED PROJECTS" : "주요 프로젝트"}
+                {String(gallery.length).padStart(2, "0")} {t.selectedProjects}
               </span>
             </div>
             <div className="work-presentation motion-reveal">
@@ -867,6 +875,7 @@ export default function App() {
                 <ProjectShowcase
                   projects={gallery}
                   lang={lang}
+                  t={t}
                   motion={motion}
                   suspended={Boolean(selected || menu)}
                   onSelect={setSelected}

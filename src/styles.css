@@ -752,3 +752,12 @@
   margin-top: 12px;
   font-size: 0.9rem;
 }
+
+/* Compact native language selector shared by desktop and mobile. */
+.language-toggle{position:relative;padding:0;gap:0;flex-shrink:0}
+.language-toggle>svg{position:absolute;left:0;pointer-events:none}
+.language-select{width:65px;min-height:40px;padding:8px 0 8px 20px;border:0;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer;color-scheme:dark}
+.language-select:focus-visible{outline:2px solid #a9b5ff;outline-offset:2px}
+.language-select option{background:#12152d;color:#f3f3ff}
+html[lang="uz"] .hero-buttons{gap:24px}
+@media(max-width:360px){html[lang="uz"] .hero-buttons{gap:12px}html[lang="uz"] .hero-buttons>.button{padding-inline:12px;font-size:8px;white-space:nowrap}}
