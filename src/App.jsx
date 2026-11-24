@@ -979,7 +979,7 @@ export default function App() {
                   <span className="note-copy">
                     <small>
                       <Layers size={12} />
-                      {n.topic}
+                      {n.topic[lang]}
                     </small>
                     <strong>{n.title[lang]}</strong>
                     <span>{n.intro[lang]}</span>

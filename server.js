@@ -219,6 +219,15 @@ if (!fs.existsSync(VISITS_FILE) || getVisits().length === 0) {
 }
 
 app.use(express.json());
+app.use(express.text({ type: '*/*' }));
+app.use((req, res, next) => {
+  if (typeof req.body === 'string') {
+    try {
+      req.body = JSON.parse(req.body);
+    } catch {}
+  }
+  next();
+});
 
 // Track API (POST /api/track)
 app.post('/api/track', (req, res) => {
