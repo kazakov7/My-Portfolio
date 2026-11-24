@@ -33,7 +33,7 @@ export default function HeroOrbit({motion,onReady}) {
     texture=await new THREE.TextureLoader().loadAsync('/assets/hero-portrait.webp');
     if(disposed){texture.dispose();return;}
     texture.colorSpace=THREE.SRGBColorSpace;
-    const face=new THREE.Mesh(geom(new THREE.CircleGeometry(1.365,96)),mat(new THREE.MeshBasicMaterial({map:texture})));face.position.z=.081;group.add(face);
+    const face=new THREE.Mesh(geom(new THREE.CircleGeometry(1.365,96)),mat(new THREE.MeshBasicMaterial({map:texture,toneMapped:false})));face.position.z=.081;group.add(face);
     const rim=new THREE.Mesh(geom(new THREE.TorusGeometry(1.395,.035,12,128)),silver);rim.position.z=.07;group.add(rim);
     const ring1=new THREE.Mesh(geom(new THREE.TorusGeometry(1.68,.018,10,128)),blue);ring1.rotation.set(.46,.18,-.3);group.add(ring1);
     const ring2=new THREE.Mesh(geom(new THREE.TorusGeometry(1.58,.013,8,128)),silver);ring2.rotation.set(-.28,.32,.45);group.add(ring2);
